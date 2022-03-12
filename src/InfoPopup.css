@@ -74,6 +74,18 @@
   max-width: 30%;
   text-align: center;
 }
+.info {
+    margin-top: -4px; /*adjust visually a bit*/
+}
+.info.below {
+    margin-top: 24px; /*adjust for top arrow*/
+}
+.info.left {
+    margin-left: 16px; /*adjust visually a bit*/
+}
+.info.right {
+    margin-left: -16px; /*adjust visually a bit*/
+}
 .info > .header {
   position: relative;
   display: block;

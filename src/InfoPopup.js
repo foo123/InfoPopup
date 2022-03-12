@@ -74,11 +74,32 @@ function removeEvent(target, event, handler, options)
     if (target.detachEvent) target.detachEvent('on' + event, handler);
     else target.removeEventListener(event, handler, eventOptionsSupported ? options : ('object' === typeof(options) ? !!options.capture : !!options));
 }
+function rect(el)
+{
+    return el.getBoundingClientRect();
+}
+function closest(el, selector)
+{
+    if (el.closest) return el.closest(selector);
+    while (el)
+    {
+        if (el.matches(selector)) return el;
+        el = el.parentNode;
+    }
+}
+function ancestor(el, other)
+{
+    while (el)
+    {
+        if (el === other) return other;
+        el = el.parentNode;
+    }
+}
 
 function InfoPopup(options)
 {
     var self = this, infoPopup, content,
-        closeBt, timer, current,
+        closeBt, timer, current, position,
         removePopup, removeInfoPopup,
         clearTimer, handler, infoHandler;
 
@@ -100,7 +121,7 @@ function InfoPopup(options)
         timer = setTimeout(removePopup, +(self.options.closeDelay || 0));
     };
     handler = function(evt) {
-        var item = evt.target && evt.target.closest(self.options.item || '.info-item');
+        var item = evt.target && closest(evt.target, self.options.item || '.info-item');
         if (item && ('function' === typeof self.options.content))
         {
             self.show(item, evt);
@@ -112,6 +133,53 @@ function InfoPopup(options)
                 }, {capture:true, passive:true});
             }
         }
+    };
+    position = function(item) {
+        var bodyRect, itemRect, infoRect,
+            x, y, vw, vh, sx, sy;
+
+        infoPopup.style.position = 'absolute';
+        removeClass(infoPopup, 'below');
+        removeClass(infoPopup, 'left');
+        removeClass(infoPopup, 'right');
+        bodyRect = rect(document.body);
+        itemRect = rect(item);
+        infoRect = rect(infoPopup);
+        vw = window.innerWidth;
+        vh = window.innerHeight;
+        sx = document.body.scrollLeft || 0;
+        sy = document.body.scrollTop || 0;
+
+        x = sx + itemRect.left - bodyRect.left + itemRect.width / 2 - infoRect.width / 2;
+        y = sy + itemRect.top - bodyRect.top - infoRect.height;
+
+        if (x < 0)
+        {
+            if (sx >= -x)
+            {
+                document.body.scrollLeft += x;
+                sx = document.body.scrollLeft;
+                x = 0;
+            }
+            else
+            {
+                x = sx + itemRect.left - bodyRect.left;
+                addClass(infoPopup, 'left');
+            }
+        }
+        else if (x + infoRect.width > vw)
+        {
+            x = sx + itemRect.left - bodyRect.left + itemRect.width - infoRect.width;
+            addClass(infoPopup, 'right');
+        }
+        if (itemRect.top + itemRect.height / 2 < vh / 2)
+        {
+            y = sy + itemRect.top - bodyRect.top + itemRect.height;
+            addClass(infoPopup, 'below');
+        }
+
+        infoPopup.style.left = String(x) + 'px';
+        infoPopup.style.top = String(y) + 'px';
     };
     self.options = options || {};
     self.dispose = function() {
@@ -131,7 +199,7 @@ function InfoPopup(options)
         }
     };
     self.show = function(item, evt) {
-        var infoContent, br, r, ir, x, y, vw, vh, sx, sy;
+        var infoContent, imgs, loaded = 0;
 
         infoContent = self.options.content(item);
         if (null == infoContent || false === infoContent)
@@ -151,54 +219,35 @@ function InfoPopup(options)
         evt && evt.preventDefault && evt.preventDefault();
         clearTimer();
 
-        removeClass(infoPopup, 'below');
-        removeClass(infoPopup, 'left');
-        removeClass(infoPopup, 'right');
-        document.body.appendChild(infoPopup);
-
         if (current) removeClass(current, 'hovered');
         current = item;
         addClass(item, 'hovered');
 
-        br = document.body.getBoundingClientRect();
-        r = item.getBoundingClientRect();
-        ir = infoPopup.getBoundingClientRect();
-        vw = window.innerWidth;
-        vh = window.innerHeight;
-        sx = document.body.scrollLeft || 0;
-        sy = document.body.scrollTop || 0;
+        document.body.appendChild(infoPopup);
 
-        x = sx + r.left - br.left + r.width / 2 - ir.width / 2;
-        y = sy + r.top - br.top - ir.height;
-
-        if (x < 0)
+        imgs = infoPopup.querySelectorAll('img');
+        if (imgs && imgs.length)
         {
-            if (sx >= -x)
-            {
-                document.body.scrollLeft += x;
-                sx = document.body.scrollLeft;
-                x = 0;
-            }
-            else
-            {
-                x = sx + r.left - br.left;
-                addClass(infoPopup, 'left');
-            }
+            [].forEach.call(imgs, function(img){
+               if (!img.complete)
+               {
+                   addEvent(img, 'load', function load() {
+                       removeEvent(img, 'load', load);
+                       ++loaded;
+                       if ((imgs.length === loaded) && infoPopup.parentNode && (infoPopup === ancestor(img, infoPopup)))
+                       {
+                           // re-position popup
+                           position(item);
+                       }
+                   })
+               }
+               else
+               {
+                   ++loaded;
+               }
+            });
         }
-        else if (x + ir.width > vw)
-        {
-            x = sx + r.left - br.left + r.width - ir.width;
-            addClass(infoPopup, 'right');
-        }
-        if (r.top + r.height / 2 < vh / 2)
-        {
-            y = sy + r.top - br.top + r.height;
-            addClass(infoPopup, 'below');
-        }
-
-        infoPopup.style.position = 'absolute';
-        infoPopup.style.left = String(x) + 'px';
-        infoPopup.style.top = String(y) + 'px';
+        position(item);
     };
 
     if (!infoPopup)
