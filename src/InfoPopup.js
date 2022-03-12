@@ -131,7 +131,7 @@ function InfoPopup(options)
         }
     };
     self.show = function(item, evt) {
-        var infoContent, r, ir, x, y, vw, vh, sx, sy;
+        var infoContent, br, r, ir, x, y, vw, vh, sx, sy;
 
         infoContent = self.options.content(item);
         if (null == infoContent || false === infoContent)
@@ -160,6 +160,7 @@ function InfoPopup(options)
         current = item;
         addClass(item, 'hovered');
 
+        br = document.body.getBoundingClientRect();
         r = item.getBoundingClientRect();
         ir = infoPopup.getBoundingClientRect();
         vw = window.innerWidth;
@@ -167,8 +168,8 @@ function InfoPopup(options)
         sx = document.body.scrollLeft || 0;
         sy = document.body.scrollTop || 0;
 
-        x = sx + r.left + r.width / 2 - ir.width / 2;
-        y = sy + r.top - ir.height;
+        x = sx + r.left - br.left + r.width / 2 - ir.width / 2;
+        y = sy + r.top - br.top - ir.height;
 
         if (x < 0)
         {
@@ -180,21 +181,22 @@ function InfoPopup(options)
             }
             else
             {
-                x = sx + r.left;
+                x = sx + r.left - br.left;
                 addClass(infoPopup, 'left');
             }
         }
         else if (x + ir.width > vw)
         {
-            x = sx + r.left + r.width - ir.width;
+            x = sx + r.left - br.left + r.width - ir.width;
             addClass(infoPopup, 'right');
         }
         if (r.top + r.height / 2 < vh / 2)
         {
-            y = sy + r.top + r.height;
+            y = sy + r.top - br.top + r.height;
             addClass(infoPopup, 'below');
         }
 
+        infoPopup.style.position = 'absolute';
         infoPopup.style.left = String(x) + 'px';
         infoPopup.style.top = String(y) + 'px';
     };
