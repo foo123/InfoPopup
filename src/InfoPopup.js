@@ -1,5 +1,5 @@
 /**
-*  InfoPopup
+*  InfoPopup.js
 *  A simple js class to show info popups easily for various items and events (Desktop and Mobile)
 *  @VERSION: 1.0.0
 *
@@ -101,7 +101,7 @@ function InfoPopup(options)
     var self = this, infoPopup, content,
         closeBt, timer, current, position,
         removePopup, removeInfoPopup,
-        clearTimer, handler, infoHandler;
+        clearTimer, handler, handler2, infoHandler;
 
     if (!(self instanceof InfoPopup))
         return new InfoPopup(options);
@@ -109,7 +109,8 @@ function InfoPopup(options)
     clearTimer = function() {
         if (timer) clearTimeout(timer);
     };
-    removePopup = function() {
+    removePopup = function(evt) {
+        evt && evt.preventDefault && evt.preventDefault();
         if (current)
             removeClass(current, 'hovered');
         if (infoPopup && infoPopup.parentNode)
@@ -120,6 +121,22 @@ function InfoPopup(options)
         clearTimer();
         timer = setTimeout(removePopup, +(self.options.closeDelay || 0));
     };
+    handler2 = function handler2(evt) {
+        if ('mouseleave' === evt.type)
+        {
+            var item = evt.target && closest(evt.target, self.options.item || '.info-item');
+            if (item === current)
+            {
+                removeEvent(document.body, evt.type, handler2, {capture:true, passive:true});
+                removeInfoPopup();
+            }
+        }
+        else
+        {
+            removeEvent(document.body, evt.type, handler2, {capture:true, passive:true});
+            removeInfoPopup();
+        }
+    };
     handler = function(evt) {
         var item = evt.target && closest(evt.target, self.options.item || '.info-item');
         if (item && ('function' === typeof self.options.content))
@@ -127,10 +144,7 @@ function InfoPopup(options)
             self.show(item, evt);
             if ('click' !== self.options.trigger)
             {
-                addEvent(document.body, 'touchstart' === evt.type ? 'touchend' : 'mouseleave', function leave() {
-                    removeEvent(document.body, 'touchstart' === evt.type ? 'touchend' : 'mouseleave', leave, {capture:true, passive:true});
-                    removeInfoPopup();
-                }, {capture:true, passive:true});
+                addEvent(document.body, 'touchstart' === evt.type ? 'touchend' : 'mouseleave', handler2, {capture:true, passive:true});
             }
         }
     };
@@ -185,9 +199,9 @@ function InfoPopup(options)
     self.dispose = function() {
         clearTimer();
         removePopup();
-        if (closeBt) removeEvent(closeBt, 'click', removePopup, {capture:true, passive:true});
         if ('click' === self.options.trigger)
         {
+            if (closeBt) removeEvent(closeBt, 'click', removePopup, {capture:true, passive:false});
             removeEvent(document.body, 'click', handler, { capture:true, passive:false});
         }
         else
@@ -256,12 +270,19 @@ function InfoPopup(options)
         addClass(infoPopup, 'info');
         if (self.options.className) addClass(infoPopup, self.options.className);
 
-        infoPopup.appendChild(document.createElement('div'));
-        addClass(infoPopup.firstChild, 'header');
-        infoPopup.firstChild.appendChild(closeBt=document.createElement('button'));
-        addClass(closeBt, 'close');
-        closeBt.setAttribute('title', self.options.closeMsg || 'Close Popup');
-        addEvent(closeBt, 'click', removePopup, {capture:true, passive:true});
+        if ('click' === self.options.trigger)
+        {
+            infoPopup.appendChild(document.createElement('div'));
+            addClass(infoPopup.firstChild, 'header');
+            infoPopup.firstChild.appendChild(closeBt=document.createElement('button'));
+            addClass(closeBt, 'close');
+            closeBt.setAttribute('title', self.options.closeMsg || 'Close Popup');
+            addEvent(closeBt, 'click', removePopup, {capture:true, passive:false});
+        }
+        else
+        {
+            closeBt = null;
+        }
 
         infoPopup.appendChild(content=document.createElement('div'));
         addClass(content, 'content');

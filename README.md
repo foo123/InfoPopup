@@ -1,6 +1,6 @@
 # InfoPopup
 
-A simple js class to show info popups easily for various items and events (Desktop and Mobile)
+A simple JavaScript class to show info popups easily for various combinations of items and events (Desktop and Mobile)
 
 **version 1.0.0** (4.5 kB minified)
 
@@ -12,15 +12,21 @@ A simple js class to show info popups easily for various items and events (Deskt
 
 ```html
 <a href="#foo" title="Go to Foo">Foo</a>
-<a href="#bar" title="Go to Bar">bar</a>
+<a href="#bar" title="Go to Bar">Bar</a>
 ```
 
 ```javascript
 InfoPopup({
+    // custom class for custom styling
     className: 'title-info',
+    // mouseenter or touchstart on mobile, alternative: trigger = 'click'
     trigger: 'hover',
+    // elements that have [title] attribute
     item: '[title]',
-    content: (item) => item.getAttribute('title')
+    // get the title content to display
+    content: (item) => item.getAttribute('title'),
+    // close popup after 1 sec
+    closeDelay: 1000
 });
 ```
 
