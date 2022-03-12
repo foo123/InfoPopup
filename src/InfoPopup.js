@@ -77,9 +77,13 @@ function removeEvent(target, event, handler, options)
 
 function InfoPopup(options)
 {
-    var self = this, infoPopup, content, close, timer, current,
-        removePopup, removeInfoPopup, clearTimer, handler, infoHandler;
-    if (!(self instanceof InfoPopup)) return new InfoPopup(options);
+    var self = this, infoPopup, content,
+        closeBt, timer, current,
+        removePopup, removeInfoPopup,
+        clearTimer, handler, infoHandler;
+
+    if (!(self instanceof InfoPopup))
+        return new InfoPopup(options);
 
     clearTimer = function() {
         if (timer) clearTimeout(timer);
@@ -100,38 +104,41 @@ function InfoPopup(options)
         if (item && ('function' === typeof self.options.content))
         {
             self.show(item, evt);
-            addEvent(document.body, 'touchstart' === evt.type ? 'touchend' : 'mouseleave', function leave() {
-                removeEvent(document.body, 'touchstart' === evt.type ? 'touchend' : 'mouseleave', leave, {capture:true, passive:true});
-                removeInfoPopup();
-            }, {capture:true, passive:true});
+            if ('click' !== self.options.trigger)
+            {
+                addEvent(document.body, 'touchstart' === evt.type ? 'touchend' : 'mouseleave', function leave() {
+                    removeEvent(document.body, 'touchstart' === evt.type ? 'touchend' : 'mouseleave', leave, {capture:true, passive:true});
+                    removeInfoPopup();
+                }, {capture:true, passive:true});
+            }
         }
     };
     self.options = options || {};
     self.dispose = function() {
         clearTimer();
         removePopup();
-        if (close) removeEvent(close, 'click', removePopup, {capture:true, passive:true});
-        if (infoPopup) removeEvent(infoPopup, 'mouseenter', infoHandler, {capture:true, passive:true});
-        if (infoPopup) removeEvent(infoPopup, 'touchstart', clearTimer, {capture:true, passive:true});
-        removeEvent(document.body, 'mouseenter', handler, {capture:true, passive:false});
-        removeEvent(document.body, 'touchstart', handler, {capture:true, passive:false});
+        if (closeBt) removeEvent(closeBt, 'click', removePopup, {capture:true, passive:true});
+        if ('click' === self.options.trigger)
+        {
+            removeEvent(document.body, 'click', handler, { capture:true, passive:false});
+        }
+        else
+        {
+            if (infoPopup) removeEvent(infoPopup, 'mouseenter', infoHandler, {capture:true, passive:true});
+            if (infoPopup) removeEvent(infoPopup, 'touchstart', clearTimer, {capture:true, passive:true});
+            removeEvent(document.body, 'mouseenter', handler, {capture:true, passive:false});
+            removeEvent(document.body, 'touchstart', handler, {capture:true, passive:false});
+        }
     };
     self.show = function(item, evt) {
-        var infoContent,
-            r = item.getBoundingClientRect(), ir, x, y,
-            vw = window.innerWidth,
-            vh = window.innerHeight,
-            sx = document.scrollingElement.scrollLeft || 0,
-            sy = document.scrollingElement.scrollTop || 0;
-
-        evt && evt.preventDefault && evt.preventDefault();
-
-        removeClass(infoPopup, 'below');
-        removeClass(infoPopup, 'left');
-        removeClass(infoPopup, 'right');
+        var infoContent, r, ir, x, y, vw, vh, sx, sy;
 
         infoContent = self.options.content(item);
-        if (infoContent instanceof window.Node)
+        if (null == infoContent || false === infoContent)
+        {
+            return;
+        }
+        else if (infoContent instanceof window.Node)
         {
             content.textContent = '';
             content.appendChild(infoContent);
@@ -141,21 +148,34 @@ function InfoPopup(options)
             content.innerHTML = trim(String(infoContent));
         }
 
+        evt && evt.preventDefault && evt.preventDefault();
+        clearTimer();
+
+        removeClass(infoPopup, 'below');
+        removeClass(infoPopup, 'left');
+        removeClass(infoPopup, 'right');
         document.body.appendChild(infoPopup);
 
         if (current) removeClass(current, 'hovered');
         current = item;
         addClass(item, 'hovered');
 
+        r = item.getBoundingClientRect();
         ir = infoPopup.getBoundingClientRect();
+        vw = window.innerWidth;
+        vh = window.innerHeight;
+        sx = document.body.scrollLeft || 0;
+        sy = document.body.scrollTop || 0;
+
         x = sx + r.left + r.width / 2 - ir.width / 2;
         y = sy + r.top - ir.height;
+
         if (x < 0)
         {
             if (sx >= -x)
             {
-                document.scrollingElement.scrollLeft += x;
-                sx = document.scrollingElement.scrollLeft;
+                document.body.scrollLeft += x;
+                sx = document.body.scrollLeft;
                 x = 0;
             }
             else
@@ -177,8 +197,6 @@ function InfoPopup(options)
 
         infoPopup.style.left = String(x) + 'px';
         infoPopup.style.top = String(y) + 'px';
-
-        clearTimer();
     };
 
     if (!infoPopup)
@@ -189,26 +207,33 @@ function InfoPopup(options)
 
         infoPopup.appendChild(document.createElement('div'));
         addClass(infoPopup.firstChild, 'header');
-        infoPopup.firstChild.appendChild(close=document.createElement('button'));
-        addClass(close, 'close');
-        close.setAttribute('title', self.options.closeMsg || 'Close Popup');
-        addEvent(close, 'click', removePopup, {capture:true, passive:true});
+        infoPopup.firstChild.appendChild(closeBt=document.createElement('button'));
+        addClass(closeBt, 'close');
+        closeBt.setAttribute('title', self.options.closeMsg || 'Close Popup');
+        addEvent(closeBt, 'click', removePopup, {capture:true, passive:true});
 
         infoPopup.appendChild(content=document.createElement('div'));
         addClass(content, 'content');
 
-        addEvent(infoPopup, 'mouseenter', infoHandler = function(evt) {
-            clearTimer();
-            addEvent(infoPopup, 'mouseleave', function leave(evt) {
-                removeEvent(infoPopup, 'mouseleave', leave, {capture:true, passive:true});
-                removeInfoPopup();
+        if ('click' === self.options.trigger)
+        {
+            addEvent(document.body, 'click', handler, {capture:true, passive:false});
+        }
+        else
+        {
+            addEvent(infoPopup, 'mouseenter', infoHandler = function(evt) {
+                clearTimer();
+                addEvent(infoPopup, 'mouseleave', function leave(evt) {
+                    removeEvent(infoPopup, 'mouseleave', leave, {capture:true, passive:true});
+                    removeInfoPopup();
+                }, {capture:true, passive:true});
             }, {capture:true, passive:true});
-        }, {capture:true, passive:true});
 
-        addEvent(infoPopup, 'touchstart', clearTimer, {capture:true, passive:true});
+            addEvent(infoPopup, 'touchstart', clearTimer, {capture:true, passive:true});
 
-        addEvent(document.body, 'mouseenter', handler, {capture:true, passive:false});
-        addEvent(document.body, 'touchstart', handler, {capture:true, passive:false});
+            addEvent(document.body, 'mouseenter', handler, {capture:true, passive:false});
+            addEvent(document.body, 'touchstart', handler, {capture:true, passive:false});
+        }
     }
 }
 InfoPopup.prototype = {

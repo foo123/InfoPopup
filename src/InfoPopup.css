@@ -1,6 +1,7 @@
 .info::before {
-  content: "";
   position: absolute;
+  display: block;
+  content: "";
   bottom: -20px;
   top: auto;
   left: 50%;
@@ -9,14 +10,14 @@
   border-width: 20px 7px 0;
   border-style: solid;
   border-color: #aaa transparent; /*depends on .info->border-color*/
-  display: block;
   width: 0;
   height: 0;
   z-index: 1;
 }
 .info::after {
-  content: "";
   position: absolute;
+  display: block;
+  content: "";
   bottom: -18px;
   top: auto;
   left: 50%;
@@ -25,7 +26,6 @@
   border-width: 18px 6px 0;
   border-style: solid;
   border-color: #fff transparent; /*depends on .info->background-color*/
-  display: block;
   width: 0;
   height: 0;
   z-index: 2;
@@ -65,9 +65,9 @@
   padding: 0;
   margin: 0;
   border: 1px solid #aaa;
+  background: #fff;
   color: #333;
   font-size: 18px;
-  background: #fff;
   border-radius: 4px;
   z-index: 10000;
   width: 300px;
@@ -114,9 +114,10 @@
   display: block;
   width: 100%;
   box-sizing: border-box;
+  overflow-y: auto;
   margin: 0 auto;
   padding: 2px 6px;
-  border: 0;
+  border: none;
 }
 @media all and (max-width: 640px) {
 .info > .header .close {

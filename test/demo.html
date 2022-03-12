@@ -3,10 +3,15 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Interactive Map of Areas of Greece</title>
-    <meta name="description" content="Interactive Map of Areas of Greece" />
+    <title>Interactive Map of Areas of Greece with InfoPopup.js</title>
+    <meta name="description" content="Interactive Map of Areas of Greece with InfoPopup.js" />
     <link rel="stylesheet" type="text/css" href="../src/InfoPopup.css" media="all"/>
     <style type="text/css">
+#forkongithub a{background:#aa0000;color:#fff;text-decoration:none;font-family:arial, sans-serif;text-align:center;font-weight:bold;padding:5px 40px;font-size:0.9rem;line-height:1.4rem;position:relative;transition:0.5s;}#forkongithub a:hover{background:#aa0000;color:#fff;}#forkongithub a::before,#forkongithub a::after{content:"";width:100%;display:block;position:absolute;z-index:100;top:1px;left:0;height:1px;background:#fff;}#forkongithub a::after{bottom:1px;top:auto;}@media screen and (min-width:800px){#forkongithub{position:absolute;display:block;z-index:100;top:0;right:0;width:200px;overflow:hidden;height:200px;}#forkongithub a{width:200px;position:absolute;top:60px;right:-60px;transform:rotate(45deg);-webkit-transform:rotate(45deg);box-shadow:4px 4px 10px rgba(0,0,0,0.8);}}
+body {
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 16px;
+}
 #map {
     position: relative;
     min-width: 160px;
@@ -18,9 +23,14 @@
     width: 100%;
 }
 .title {
+  display: block;
   font-size: 1.8rem;
   line-height: 2rem;
   margin: 10px auto 10px auto;
+  text-align: center;
+}
+.info {
+  width: 220px;
 }
 .info > .content a {
     color: #FDB61E;
@@ -37,6 +47,7 @@
     font-size: 1.4rem;
     line-height: 1.4rem;
     color: #FDB61E;
+    margin: 0 auto 10px auto;
     text-shadow: 1px 1px 1px #00f;
 }
 .info > .content .area-size {
@@ -81,7 +92,8 @@
 </style>
 </head>
 <body>
-<h1 class="title">Interactive Map of Areas of Greece</h1>
+<span id="forkongithub"><a href="https://github.com/foo123/InfoPopup">Fork me on GitHub</a></span>
+<h1 class="title">Interactive Map of Areas of Greece w/ InfoPopup v.<span id="version"></span></h1>
 <div id="map">
 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 160 160" style="enable-background:new 0 0 160 160;" xml:space="preserve">
 <style type="text/css">
@@ -430,12 +442,13 @@
 </div>
 <script src="../src/InfoPopup.js"></script>
 <script>
-var areas = {"argosaronikos":{"name":"\u0391\u03c1\u03b3\u03bf\u03c3\u03b1\u03c1\u03c9\u03bd\u03b9\u03ba\u03cc\u03c2","area":"283,80 \u03c4.\u03c7\u03bb\u03bc","map":"https:\/\/golden-greece.gr\/data\/argosaronikos\/map\/argosaronikos.jpg","uri":"https:\/\/golden-greece.gr\/islands\/argosaronikos"},"egeo":{"name":"B. &amp; \u0391. \u0391\u03b9\u03b3\u03b1\u03af\u03bf","area":"4.279,50 \u03c4.\u03c7\u03bb\u03bc","map":"https:\/\/golden-greece.gr\/data\/egeo\/map\/egeo.jpg","uri":"https:\/\/golden-greece.gr\/islands\/egeo"},"dodekanisa":{"name":"\u0394\u03c9\u03b4\u03b5\u03ba\u03ac\u03bd\u03b7\u03c3\u03b1","area":"2.714,00 \u03c4.\u03c7\u03bb\u03bc","map":"https:\/\/golden-greece.gr\/data\/dodekanisa\/map\/dodekanisa.jpg","uri":"https:\/\/golden-greece.gr\/islands\/dodekanisa"},"evia":{"name":"\u0395\u03cd\u03b2\u03bf\u03b9\u03b1","area":"4.164,00 \u03c4.\u03c7\u03bb\u03bc","map":"https:\/\/golden-greece.gr\/data\/evia\/map\/evia.jpg","uri":"https:\/\/golden-greece.gr\/islands\/evia"},"ionio":{"name":"\u0399\u03cc\u03bd\u03b9\u03b1 \u039d\u03b7\u03c3\u03b9\u03ac","area":"2.595,67 \u03c4.\u03c7\u03bb\u03bc","map":"https:\/\/golden-greece.gr\/data\/ionio\/map\/eptanisa.jpg","uri":"https:\/\/golden-greece.gr\/islands\/ionio"},"kriti":{"name":"\u039a\u03c1\u03ae\u03c4\u03b7","area":"8.374,34 \u03c4.\u03c7\u03bb\u03bc","map":"https:\/\/golden-greece.gr\/data\/kriti\/map\/kriti.jpg","uri":"https:\/\/golden-greece.gr\/islands\/kriti"},"kyklades":{"name":"\u039a\u03c5\u03ba\u03bb\u03ac\u03b4\u03b5\u03c2","area":"2.572,00 \u03c4.\u03c7\u03bb\u03bc","map":"https:\/\/golden-greece.gr\/data\/kyklades\/map\/kyklades.jpg","uri":"https:\/\/golden-greece.gr\/islands\/kyklades"},"sporades":{"name":"\u03a3\u03c0\u03bf\u03c1\u03ac\u03b4\u03b5\u03c2","area":"473,05 \u03c4.\u03c7\u03bb\u03bc","map":"https:\/\/golden-greece.gr\/data\/sporades\/map\/sporades.jpg","uri":"https:\/\/golden-greece.gr\/islands\/sporades"},"attiki":{"name":"\u0391\u03c4\u03c4\u03b9\u03ba\u03ae","area":"3.808,00 \u03c4.\u03c7\u03bb\u03bc","map":"https:\/\/golden-greece.gr\/data\/attiki\/map\/attiki.jpg","uri":"https:\/\/golden-greece.gr\/mainland\/attiki"},"ipiros":{"name":"\u0389\u03c0\u03b5\u03b9\u03c1\u03bf\u03c2","area":"9.160,00 \u03c4.\u03c7\u03bb\u03bc","map":"https:\/\/golden-greece.gr\/data\/ipiros\/map\/ipiros.jpg","uri":"https:\/\/golden-greece.gr\/mainland\/ipiros"},"thesalia":{"name":"\u0398\u03b5\u03c3\u03c3\u03b1\u03bb\u03af\u03b1","area":"13.772,00 \u03c4.\u03c7\u03bb\u03bc","map":"https:\/\/golden-greece.gr\/data\/thesalia\/map\/thesalia.jpg","uri":"https:\/\/golden-greece.gr\/mainland\/thesalia"},"thraki":{"name":"\u0398\u03c1\u03ac\u03ba\u03b7","area":"8.593,00 \u03c4.\u03c7\u03bb\u03bc","map":"https:\/\/golden-greece.gr\/data\/thraki\/map\/thraki.jpg","uri":"https:\/\/golden-greece.gr\/mainland\/thraki"},"makedonia":{"name":"\u039c\u03b1\u03ba\u03b5\u03b4\u03bf\u03bd\u03af\u03b1","area":"33.839,00 \u03c4.\u03c7\u03bb\u03bc","map":"https:\/\/golden-greece.gr\/data\/makedonia\/map\/makedonia.jpg","uri":"https:\/\/golden-greece.gr\/mainland\/makedonia"},"peloponisos":{"name":"\u03a0\u03b5\u03bb\u03bf\u03c0\u03cc\u03bd\u03bd\u03b7\u03c3\u03bf\u03c2","area":"21.400,00 \u03c4.\u03c7\u03bb\u03bc","map":"https:\/\/golden-greece.gr\/data\/peloponisos\/map\/peloponisos.jpg","uri":"https:\/\/golden-greece.gr\/mainland\/peloponisos"},"sterea":{"name":"\u03a3\u03c4\u03b5\u03c1\u03b5\u03ac \u0395\u03bb\u03bb\u03ac\u03b4\u03b1","area":"16.813,00 \u03c4.\u03c7\u03bb\u03bc","map":"https:\/\/golden-greece.gr\/data\/sterea\/map\/sterea-ellada.jpg","uri":"https:\/\/golden-greece.gr\/mainland\/sterea"}};
+document.getElementById('version').textContent = InfoPopup.VERSION;
+var areas = {"argosaronikos":{"name":"Argosaronic","area":"283,80 sq.km"},"egeo":{"name":"North Aegean","area":"4.279,50 sq.km"},"dodekanisa":{"name":"Dodecanese","area":"2.714,00 sq.km"},"evia":{"name":"Euboea","area":"4.164,00 sq.km"},"ionio":{"name":"Ionian Islands","area":"2.595,67 sq.km"},"kriti":{"name":"Crete","area":"8.374,34 sq.km"},"kyklades":{"name":"Cyclades","area":"2.572,00 sq.km"},"sporades":{"name":"Sporades","area":"473,05 sq.km"},"attiki":{"name":"Attica","area":"3.808,00 sq.km"},"ipiros":{"name":"Epirus","area":"9.160,00 sq.km"},"thesalia":{"name":"Thessaly","area":"13.772,00"},"thraki":{"name":"Thrace","area":"8.593,00 sq.km"},"makedonia":{"name":"Macedonia","area":"33.839,00 sq.km"},"peloponisos":{"name":"Peloponnese","area":"21.400,00 sq.km"},"sterea":{"name":"Central Greece","area":"16.813,00 sq.km"}};
 InfoPopup({
     item: '.group',
     content: function(g) {
         var area = areas[g.id];
-        return '<h2 class="area-name">'+area.name+'</h2><p class="area-size"><b>Έκταση</b>: <span>'+area.area+'</span></p>';
+        return '<h4 class="area-name">'+area.name+'</h4><p class="area-size"><b>Area</b>: <span>'+area.area+'</span></p>';
     },
     closeDelay: 1000
 });
