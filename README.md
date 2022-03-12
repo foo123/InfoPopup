@@ -4,4 +4,4 @@ A simple js class to show info popups easily for various items and events (Deskt
 
 **version 1.0.0** (3.6 kB minified)
 
-[![interactive map with InfoPopup](/screenshot.png)](https://foo123.github.io/examples/infopopup)
+[![interactive map with InfoPopup](/screenshot.png)](https://foo123.github.io/examples/infopopup/)
