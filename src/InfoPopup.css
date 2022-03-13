@@ -99,7 +99,7 @@
 .info > .header .close {
   position: relative;
   display: inline-block;
-  background: none;
+  background: #fff;
   font-weight: normal;
   color: #999;
   border: 1px solid #999;
@@ -107,6 +107,7 @@
   border-radius: 7px;
   font-size: 6px;
   line-height: 14px;
+  font-weight: bold;
   text-align: center;
   padding: 0;
   margin: 0;
@@ -117,15 +118,16 @@
   content: "\2573";
   position: absolute;
   display: inline-block;
+  border: 0;
+  margin: 0;
   top: 50%;
   left: 50%;
   margin-top: -7.5px;
   margin-left: -3px;
 }
 .info > .header .close:hover {
-  background: none;
-  color: #333;
-  border: 1px solid #333;
+  color: #121212;
+  border: 1px solid #121212;
 }
 .info > .content {
   position: relative;

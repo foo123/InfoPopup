@@ -33,6 +33,9 @@ body {
 .info {
   width: 220px;
 }
+.info > .content {
+    padding: 6px;
+}
 .info > .content a {
     color: #FDB61E;
     text-decoration: none;
@@ -57,20 +60,7 @@ body {
     font-size: 0.8rem;
     line-height: 0.8rem;
     color: #121212;
-    text-decoration: none;
-}
-.info > .content .area-map {
-    position: relative;
-    display: block;
-    width: 100%;
-    height: 160px;
-    margin: 10px auto;
-    overflow-y: auto;
-}
-.info > .content .area-map img {
-    position: relative;
-    max-width: 90%;
-    height: auto;
+    margin: 0 auto;
 }
 @media all and (max-width: 640px) {
 .info > .content .area-name {
@@ -80,14 +70,6 @@ body {
 .info > .content .area-size {
     font-size: 0.6rem;
     line-height: 0.6rem;
-}
-.info > .content .area-map {
-    height: 100px;
-}
-}
-@media all and (max-width: 360px) {
-.info > .content .area-map {
-    height: 50px;
 }
 }
 </style>

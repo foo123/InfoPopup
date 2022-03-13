@@ -99,8 +99,8 @@ function ancestor(el, other)
 function InfoPopup(options)
 {
     var self = this, infoPopup, content,
-        closeBt, timer, current, position,
-        removePopup, removeInfoPopup,
+        closeBt, timer, current, positionAt,
+        removePopup, removeInfoPopup, clearCurrent,
         clearTimer, handler, handler2, infoHandler;
 
     if (!(self instanceof InfoPopup))
@@ -109,13 +109,20 @@ function InfoPopup(options)
     clearTimer = function() {
         if (timer) clearTimeout(timer);
     };
+    clearCurrent = function() {
+        if (current)
+        {
+            removeClass(current, 'hovered');
+            if ('function' === typeof self.options.onBlur)
+                self.options.onBlur(current);
+            current = null;
+        }
+    };
     removePopup = function(evt) {
         evt && evt.preventDefault && evt.preventDefault();
-        if (current)
-            removeClass(current, 'hovered');
+        clearCurrent();
         if (infoPopup && infoPopup.parentNode)
             infoPopup.parentNode.removeChild(infoPopup);
-        current = null;
     };
     removeInfoPopup = function() {
         clearTimer();
@@ -148,7 +155,7 @@ function InfoPopup(options)
             }
         }
     };
-    position = function(item) {
+    positionAt = function(item) {
         var bodyRect, itemRect, infoRect,
             x, y, vw, vh, sx, sy;
 
@@ -231,29 +238,34 @@ function InfoPopup(options)
         }
 
         evt && evt.preventDefault && evt.preventDefault();
+
         clearTimer();
 
-        if (current) removeClass(current, 'hovered');
-        current = item;
+        clearCurrent();
+
         addClass(item, 'hovered');
+        current = item;
 
         document.body.appendChild(infoPopup);
 
-        imgs = infoPopup.querySelectorAll('img');
+        imgs = infoPopup.getElementsByTagName('img');
         if (imgs && imgs.length)
         {
-            [].forEach.call(imgs, function(img){
-               if (!img.complete)
+            [].forEach.call(imgs, function(img) {
+               if (!img.complete && ((img.src && img.src.length) || (img.currentSrc && img.currentSrc.length)))
                {
-                   addEvent(img, 'load', function load() {
+                   var load = function load() {
+                       removeEvent(img, 'error', load);
                        removeEvent(img, 'load', load);
                        ++loaded;
                        if ((imgs.length === loaded) && infoPopup.parentNode && (infoPopup === ancestor(img, infoPopup)))
                        {
                            // re-position popup
-                           position(item);
+                           positionAt(item);
                        }
-                   })
+                   };
+                   addEvent(img, 'error', load);
+                   addEvent(img, 'load', load);
                }
                else
                {
@@ -261,7 +273,7 @@ function InfoPopup(options)
                }
             });
         }
-        position(item);
+        positionAt(item);
     };
 
     if (!infoPopup)
