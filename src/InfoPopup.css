@@ -1,4 +1,4 @@
-.info::before {
+.info-popup::before {
   position: absolute;
   display: block;
   content: "";
@@ -9,12 +9,12 @@
   margin-left: -4px;
   border-width: 20px 7px 0;
   border-style: solid;
-  border-color: #aaa transparent; /*depends on .info->border-color*/
+  border-color: #aaa transparent; /*depends on .info-popup->border-color*/
   width: 0;
   height: 0;
   z-index: 1;
 }
-.info::after {
+.info-popup::after {
   position: absolute;
   display: block;
   content: "";
@@ -25,40 +25,40 @@
   margin-left: -3px;
   border-width: 18px 6px 0;
   border-style: solid;
-  border-color: #fff transparent; /*depends on .info->background-color*/
+  border-color: #fff transparent; /*depends on .info-popup->background-color*/
   width: 0;
   height: 0;
   z-index: 2;
 }
-.info.below::before {
+.info-popup.below::before {
   top: -20px;
   bottom: auto;
   border-width: 0 7px 20px;
 }
-.info.below::after {
+.info-popup.below::after {
   top: -18px;
   bottom: auto;
   border-width: 0 6px 18px;
 }
-.info.left::before {
+.info-popup.left::before {
     margin-left: 0;
-    left: 4px; /*depends on .info->border-radius*/
+    left: 4px; /*depends on .info-popup->border-radius*/
 }
-.info.left::after {
+.info-popup.left::after {
     margin-left: 0;
     left: 5px;
 }
-.info.right::before {
+.info-popup.right::before {
     margin-left: 0;
     left: auto;
-    right: 4px; /*depends on .info->border-radius*/
+    right: 4px; /*depends on .info-popup->border-radius*/
 }
-.info.right::after {
+.info-popup.right::after {
     margin-left: 0;
     left: auto;
     right: 5px;
 }
-.info {
+.info-popup {
   position: absolute;
   display: block;
   box-sizing: border-box;
@@ -74,19 +74,19 @@
   max-width: 30%;
   text-align: center;
 }
-.info {
+.info-popup {
     margin-top: -4px; /*adjust visually a bit*/
 }
-.info.below {
+.info-popup.below {
     margin-top: 24px; /*adjust for top arrow*/
 }
-.info.left {
+.info-popup.left {
     margin-left: 16px; /*adjust visually a bit*/
 }
-.info.right {
+.info-popup.right {
     margin-left: -16px; /*adjust visually a bit*/
 }
-.info > .header {
+.info-popup > .header {
   position: relative;
   display: block;
   width: 100%;
@@ -96,7 +96,7 @@
   border: 0;
   text-align: right;
 }
-.info > .header .close {
+.info-popup > .header .close {
   position: relative;
   display: inline-block;
   background: #fff;
@@ -114,7 +114,7 @@
   margin-right: 6px;
   cursor: pointer;
 }
-.info > .header .close::before {
+.info-popup > .header .close::before {
   content: "\2573";
   position: absolute;
   display: inline-block;
@@ -125,11 +125,11 @@
   margin-top: -7.5px;
   margin-left: -3px;
 }
-.info > .header .close:hover {
+.info-popup > .header .close:hover {
   color: #121212;
   border: 1px solid #121212;
 }
-.info > .content {
+.info-popup > .content {
   position: relative;
   display: block;
   width: 100%;

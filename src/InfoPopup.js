@@ -279,7 +279,7 @@ function InfoPopup(options)
     if (!infoPopup)
     {
         infoPopup = document.createElement('div');
-        addClass(infoPopup, 'info');
+        addClass(infoPopup, 'info-popup');
         if (self.options.infoClass) addClass(infoPopup, self.options.infoClass);
 
         if ('click' === self.options.trigger)
