@@ -17,8 +17,10 @@ A simple JavaScript class to show info popups easily for various combinations of
 
 ```javascript
 InfoPopup({
-    // custom class for custom styling
-    className: 'title-info',
+    // custom class for custom styling of popup
+    infoClass: 'title-info',
+    // custom class for custom styling of focused element
+    focusedClass: 'focused',
     // mouseenter or touchstart on mobile, alternative: trigger = 'click'
     trigger: 'hover',
     // elements that have [title] attribute

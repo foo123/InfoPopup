@@ -112,7 +112,7 @@ function InfoPopup(options)
     clearCurrent = function() {
         if (current)
         {
-            removeClass(current, 'hovered');
+            removeClass(current, self.options.focusedClass || 'focused');
             if ('function' === typeof self.options.onBlur)
                 self.options.onBlur(current);
             current = null;
@@ -243,7 +243,7 @@ function InfoPopup(options)
 
         clearCurrent();
 
-        addClass(item, 'hovered');
+        addClass(item, self.options.focusedClass || 'focused');
         current = item;
 
         document.body.appendChild(infoPopup);
@@ -280,7 +280,7 @@ function InfoPopup(options)
     {
         infoPopup = document.createElement('div');
         addClass(infoPopup, 'info');
-        if (self.options.className) addClass(infoPopup, self.options.className);
+        if (self.options.infoClass) addClass(infoPopup, self.options.infoClass);
 
         if ('click' === self.options.trigger)
         {
