@@ -2,7 +2,7 @@
 
 A simple JavaScript class to show info popups easily for various combinations of items and events (Desktop and Mobile)
 
-**version 1.0.0** (4.5 kB minified)
+**version 1.0.1** (5 kB minified)
 
 
 [Live Example](https://foo123.github.io/examples/infopopup/)
@@ -27,6 +27,12 @@ InfoPopup({
     item: '[title]',
     // get the title content to display
     content: (item) => item.getAttribute('title'),
+    // position popup at 'center' of item on X axis
+    // options: 'left', 'right', 'center' (default)
+    atItemX: 'center',
+    // position popup differently on Y axis depending on item
+    // options: 'bottom', 'center', 'top' (default)
+    atItemY: (item) => item.href === '#bar' ? 'bottom' : 'top',
     // close popup after 1 sec
     closeDelay: 1000
 });

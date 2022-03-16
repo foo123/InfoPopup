@@ -1,7 +1,7 @@
 /**
 *  InfoPopup.js
 *  A simple js class to show info popups easily for various items and events (Desktop and Mobile)
-*  @VERSION: 1.0.0
+*  @VERSION: 1.0.1
 *
 *  https://github.com/foo123/InfoPopup
 *
@@ -19,7 +19,7 @@ else
 }('undefined' !== typeof self ? self : this, 'InfoPopup', function(undef) {
 "use strict";
 
-var VERSION = '1.0.0',
+var VERSION = '1.0.1',
     trim_re = /^\s+|\s+$/g,
     trim = String.prototype.trim
         ? function(s) {return s.trim();}
@@ -95,7 +95,10 @@ function ancestor(el, other)
         el = el.parentNode;
     }
 }
-
+function is_function(x)
+{
+    return 'function' === typeof x;
+}
 function InfoPopup(options)
 {
     var self = this, infoPopup, content,
@@ -155,10 +158,12 @@ function InfoPopup(options)
             }
         }
     };
-    positionAt = function(item) {
+    positionAt = function(item, atItemX, atItemY) {
         var bodyRect, itemRect, infoRect,
             x, y, vw, vh, sx, sy;
 
+        if (is_function(atItemX)) atItemX = atItemX(item, self);
+        if (is_function(atItemY)) atItemY = atItemY(item, self);
         infoPopup.style.position = 'absolute';
         removeClass(infoPopup, 'below');
         removeClass(infoPopup, 'left');
@@ -166,41 +171,96 @@ function InfoPopup(options)
         bodyRect = rect(document.body);
         itemRect = rect(item);
         infoRect = rect(infoPopup);
-        vw = window.innerWidth;
-        vh = window.innerHeight;
+        vw = window.innerWidth || document.documentElement.clientWidth;
+        vh = window.innerHeight || document.documentElement.clientHeight;
         sx = document.body.scrollLeft || 0;
         sy = document.body.scrollTop || 0;
 
-        x = sx + itemRect.left - bodyRect.left + itemRect.width / 2 - infoRect.width / 2;
-        y = sy + itemRect.top - bodyRect.top - infoRect.height;
-
-        if (x < 0)
+        switch ((atItemX || 'center').toLowerCase())
         {
-            if (sx >= -x)
-            {
-                document.body.scrollLeft += x;
-                sx = document.body.scrollLeft;
-                x = 0;
-            }
-            else
-            {
-                x = sx + itemRect.left - bodyRect.left;
+            case 'left':
+                x = itemRect.left;
                 addClass(infoPopup, 'left');
-            }
+                break;
+            case 'right':
+                x = itemRect.right - infoRect.width;
+                addClass(infoPopup, 'right');
+                break;
+            case 'center':
+            default:
+                x = itemRect.left + itemRect.width / 2 - infoRect.width / 2;
+                if (x < 0)
+                {
+                    if (sx >= -x)
+                    {
+                        document.body.scrollLeft += x;
+                        sx = document.body.scrollLeft;
+                        x = 0;
+                    }
+                    else
+                    {
+                        x = itemRect.left;
+                        addClass(infoPopup, 'left');
+                    }
+                }
+                else if (x + infoRect.width > vw)
+                {
+                    x = itemRect.right - infoRect.width;
+                    addClass(infoPopup, 'right');
+                }
+                break;
         }
-        else if (x + infoRect.width > vw)
+        switch ((atItemY || 'top').toLowerCase())
         {
-            x = sx + itemRect.left - bodyRect.left + itemRect.width - infoRect.width;
-            addClass(infoPopup, 'right');
+            case 'center':
+                y = itemRect.top + itemRect.height / 2 - infoRect.height;
+                if (y < 0)
+                {
+                    if (sy >= -y)
+                    {
+                        document.body.scrollTop += y;
+                        sy = document.body.scrollTop;
+                        y = 0;
+                    }
+                    else
+                    {
+                        y = itemRect.top + itemRect.height / 2;
+                        addClass(infoPopup, 'below');
+                    }
+                }
+                break;
+            case 'bottom':
+                y = itemRect.bottom;
+                if (y + infoRect.height > vh)
+                {
+                    y = itemRect.top - infoRect.height;
+                }
+                else
+                {
+                    addClass(infoPopup, 'below');
+                }
+                break;
+            case 'top':
+            default:
+                y = itemRect.top - infoRect.height;
+                if (y < 0)
+                {
+                    if (sy >= -y)
+                    {
+                        document.body.scrollTop += y;
+                        sy = document.body.scrollTop;
+                        y = 0;
+                    }
+                    else
+                    {
+                        y = itemRect.bottom;
+                        addClass(infoPopup, 'below');
+                    }
+                }
+                break;
         }
-        if (itemRect.top + itemRect.height / 2 < vh / 2)
-        {
-            y = sy + itemRect.top - bodyRect.top + itemRect.height;
-            addClass(infoPopup, 'below');
-        }
-
-        infoPopup.style.left = String(x) + 'px';
-        infoPopup.style.top = String(y) + 'px';
+        infoPopup.style.left = String(x + sx - bodyRect.left) + 'px';
+        infoPopup.style.top = String(y + sy - bodyRect.top) + 'px';
     };
     self.options = options || {};
     self.dispose = function() {
@@ -261,7 +321,7 @@ function InfoPopup(options)
                        if ((imgs.length === loaded) && infoPopup.parentNode && (infoPopup === ancestor(img, infoPopup)))
                        {
                            // re-position popup
-                           positionAt(item);
+                           positionAt(item, self.options.atItemX, self.options.atItemY);
                        }
                    };
                    addEvent(img, 'error', load);
@@ -273,7 +333,7 @@ function InfoPopup(options)
                }
             });
         }
-        positionAt(item);
+        positionAt(item, self.options.atItemX, self.options.atItemY);
     };
 
     if (!infoPopup)
