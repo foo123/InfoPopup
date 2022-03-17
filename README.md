@@ -2,7 +2,7 @@
 
 A simple JavaScript class to show info popups easily for various combinations of items and events (Desktop and Mobile)
 
-**version 1.0.1** (5 kB minified)
+**version 1.0.1** (6 kB minified)
 
 
 [Live Example](https://foo123.github.io/examples/infopopup/)
@@ -16,7 +16,7 @@ A simple JavaScript class to show info popups easily for various combinations of
 ```
 
 ```javascript
-InfoPopup({
+let infoPopup = InfoPopup({
     // custom class for custom styling of popup
     infoClass: 'title-info',
     // custom class for custom styling of focused element
@@ -33,9 +33,13 @@ InfoPopup({
     // position popup differently on Y axis depending on item
     // options: 'bottom', 'center', 'top' (default)
     atItemY: (item) => item.href === '#bar' ? 'bottom' : 'top',
-    // close popup after 1 sec
-    closeDelay: 1000
+    // hide popup after 1 sec
+    hideDelay: 1000
 });
+
+// programmatically show/hide popup
+infoPopup.show(document.querySelector('[href="#foo"]'));
+infoPopup.hide();
 ```
 
 [![interactive map with InfoPopup](/screenshot.png)](https://foo123.github.io/examples/infopopup/)

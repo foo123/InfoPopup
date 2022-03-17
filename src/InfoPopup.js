@@ -129,7 +129,7 @@ function InfoPopup(options)
     };
     removeInfoPopup = function() {
         clearTimer();
-        timer = setTimeout(removePopup, +(self.options.closeDelay || 0));
+        timer = setTimeout(removePopup, +(self.options.hideDelay || 0));
     };
     handler2 = function handler2(evt) {
         if ('mouseleave' === evt.type)
@@ -149,7 +149,7 @@ function InfoPopup(options)
     };
     handler = function(evt) {
         var item = evt.target && closest(evt.target, self.options.item || '.info-item');
-        if (item && ('function' === typeof self.options.content))
+        if (item && is_function(self.options.content))
         {
             self.show(item, evt);
             if ('click' !== self.options.trigger)
@@ -181,10 +181,46 @@ function InfoPopup(options)
             case 'left':
                 x = itemRect.left;
                 addClass(infoPopup, 'left');
+                if (0 > x)
+                {
+                    if (itemRect.right - infoRect.width > x)
+                    {
+                        x = itemRect.right - infoRect.width;
+                        removeClass(infoPopup, 'left');
+                        addClass(infoPopup, 'right');
+                    }
+                }
+                else if (x + infoRect.width > vw)
+                {
+                    if (itemRect.right < x + infoRect.width)
+                    {
+                        x = itemRect.right - infoRect.width;
+                        removeClass(infoPopup, 'left');
+                        addClass(infoPopup, 'right');
+                    }
+                }
                 break;
             case 'right':
                 x = itemRect.right - infoRect.width;
                 addClass(infoPopup, 'right');
+                if (0 > x)
+                {
+                    if (itemRect.left > x)
+                    {
+                        x = itemRect.left;
+                        removeClass(infoPopup, 'right');
+                        addClass(infoPopup, 'left');
+                    }
+                }
+                else if (itemRect.right > vw)
+                {
+                    if (itemRect.left + infoRect.width < itemRect.right)
+                    {
+                        x = itemRect.left;
+                        removeClass(infoPopup, 'right');
+                        addClass(infoPopup, 'left');
+                    }
+                }
                 break;
             case 'center':
             default:
@@ -231,13 +267,14 @@ function InfoPopup(options)
                 break;
             case 'bottom':
                 y = itemRect.bottom;
+                addClass(infoPopup, 'below');
                 if (y + infoRect.height > vh)
                 {
-                    y = itemRect.top - infoRect.height;
-                }
-                else
-                {
-                    addClass(infoPopup, 'below');
+                    if (infoRect.height - itemRect.top < y + infoRect.height - vh)
+                    {
+                        y = itemRect.top - infoRect.height;
+                        removeClass(infoPopup, 'below');
+                    }
                 }
                 break;
             case 'top':
@@ -251,7 +288,7 @@ function InfoPopup(options)
                         sy = document.body.scrollTop;
                         y = 0;
                     }
-                    else
+                    else if (vh - itemRect.bottom - infoRect.height > y)
                     {
                         y = itemRect.bottom;
                         addClass(infoPopup, 'below');
@@ -279,10 +316,15 @@ function InfoPopup(options)
             removeEvent(document.body, 'touchstart', handler, {capture:true, passive:false});
         }
     };
+    self.hide = function() {
+        clearTimer();
+        removePopup();
+    };
     self.show = function(item, evt) {
+        if (!item || !is_function(self.options.content)) return;
         var infoContent, imgs, loaded = 0;
 
-        infoContent = self.options.content(item);
+        infoContent = self.options.content(item, self);
         if (null == infoContent || false === infoContent)
         {
             return;
@@ -303,8 +345,8 @@ function InfoPopup(options)
 
         clearCurrent();
 
-        addClass(item, self.options.focusedClass || 'focused');
         current = item;
+        addClass(current, self.options.focusedClass || 'focused');
 
         document.body.appendChild(infoPopup);
 
@@ -318,7 +360,12 @@ function InfoPopup(options)
                        removeEvent(img, 'error', load);
                        removeEvent(img, 'load', load);
                        ++loaded;
-                       if ((imgs.length === loaded) && infoPopup.parentNode && (infoPopup === ancestor(img, infoPopup)))
+                       if (
+                        (imgs.length === loaded)
+                        && (item === current)
+                        && infoPopup.parentNode
+                        && (infoPopup === ancestor(img, infoPopup))
+                        )
                        {
                            // re-position popup
                            positionAt(item, self.options.atItemX, self.options.atItemY);
@@ -384,7 +431,8 @@ InfoPopup.prototype = {
     constructor: InfoPopup,
     options: null,
     dispose: null,
-    show: null
+    show: null,
+    hide: null
 };
 InfoPopup.VERSION = VERSION;
 return InfoPopup;
