@@ -1,7 +1,7 @@
 /**
 *  InfoPopup.js
 *  A simple js class to show info popups easily for various items and events (Desktop and Mobile)
-*  @VERSION: 1.0.1
+*  @VERSION: 1.0.2
 *
 *  https://github.com/foo123/InfoPopup
 *
@@ -19,7 +19,7 @@ else
 }('undefined' !== typeof self ? self : this, 'InfoPopup', function(undef) {
 "use strict";
 
-var VERSION = '1.0.1',
+var VERSION = '1.0.2',
     trim_re = /^\s+|\s+$/g,
     trim = String.prototype.trim
         ? function(s) {return s.trim();}
@@ -74,9 +74,24 @@ function removeEvent(target, event, handler, options)
     if (target.detachEvent) target.detachEvent('on' + event, handler);
     else target.removeEventListener(event, handler, eventOptionsSupported ? options : ('object' === typeof(options) ? !!options.capture : !!options));
 }
+function computedStyle(el)
+{
+    return ('function' === typeof(window.getComputedStyle) ? window.getComputedStyle(el, null) : el.currentStyle) || {};
+}
 function rect(el)
 {
     return el.getBoundingClientRect();
+}
+function scrollingElement(document)
+{
+    return document.scrollingElement || document.documentElement || document.body;
+}
+function viewPort(document)
+{
+    return {
+        width: window.innerWidth || document.documentElement.clientWidth,
+        height: window.innerHeight || document.documentElement.clientHeight
+    };
 }
 function closest(el, selector)
 {
@@ -159,8 +174,10 @@ function InfoPopup(options)
         }
     };
     positionAt = function(item, atItemX, atItemY) {
-        var bodyRect, itemRect, infoRect,
-            x, y, vw, vh, sx, sy;
+        var bodyStyle, bodyRect, itemRect, infoRect,
+            scrollEl, viewport, x, y,
+            scrollLeft = 0, scrollTop = 0,
+            marginLeft = 0, marginTop = 0;
 
         if (is_function(atItemX)) atItemX = atItemX(item, self);
         if (is_function(atItemY)) atItemY = atItemY(item, self);
@@ -168,13 +185,20 @@ function InfoPopup(options)
         removeClass(infoPopup, 'below');
         removeClass(infoPopup, 'left');
         removeClass(infoPopup, 'right');
+        scrollEl = scrollingElement(document);
+        viewport = viewPort(document);
+        bodyStyle = computedStyle(document.body);
         bodyRect = rect(document.body);
         itemRect = rect(item);
         infoRect = rect(infoPopup);
-        vw = window.innerWidth || document.documentElement.clientWidth;
-        vh = window.innerHeight || document.documentElement.clientHeight;
-        sx = document.body.scrollLeft || 0;
-        sy = document.body.scrollTop || 0;
+        if ('static' === bodyStyle.position)
+        {
+            // take account of applied margins
+            marginLeft = parseInt(bodyStyle.marginLeft || 0) || 0;
+            marginTop = parseInt(bodyStyle.marginTop || 0) || 0;
+        }
+        scrollLeft = scrollEl.scrollLeft || 0;
+        scrollTop = scrollEl.scrollTop || 0;
 
         switch ((atItemX || 'center').toLowerCase())
         {
@@ -190,7 +214,7 @@ function InfoPopup(options)
                         addClass(infoPopup, 'right');
                     }
                 }
-                else if (x + infoRect.width > vw)
+                else if (x + infoRect.width > viewport.width)
                 {
                     if (itemRect.right < x + infoRect.width)
                     {
@@ -212,7 +236,7 @@ function InfoPopup(options)
                         addClass(infoPopup, 'left');
                     }
                 }
-                else if (itemRect.right > vw)
+                else if (itemRect.right > viewport.width)
                 {
                     if (itemRect.left + infoRect.width < itemRect.right)
                     {
@@ -227,10 +251,10 @@ function InfoPopup(options)
                 x = itemRect.left + itemRect.width / 2 - infoRect.width / 2;
                 if (x < 0)
                 {
-                    if (sx >= -x)
+                    if (scrollLeft >= -x)
                     {
-                        document.body.scrollLeft += x;
-                        sx = document.body.scrollLeft;
+                        scrollEl.scrollLeft += x;
+                        scrollLeft = scrollEl.scrollLeft;
                         x = 0;
                     }
                     else
@@ -239,7 +263,7 @@ function InfoPopup(options)
                         addClass(infoPopup, 'left');
                     }
                 }
-                else if (x + infoRect.width > vw)
+                else if (x + infoRect.width > viewport.width)
                 {
                     x = itemRect.right - infoRect.width;
                     addClass(infoPopup, 'right');
@@ -252,10 +276,10 @@ function InfoPopup(options)
                 y = itemRect.top + itemRect.height / 2 - infoRect.height;
                 if (y < 0)
                 {
-                    if (sy >= -y)
+                    if (scrollTop >= -y)
                     {
-                        document.body.scrollTop += y;
-                        sy = document.body.scrollTop;
+                        scrollEl.scrollTop += y;
+                        scrollTop = scrollEl.scrollTop;
                         y = 0;
                     }
                     else
@@ -268,9 +292,9 @@ function InfoPopup(options)
             case 'bottom':
                 y = itemRect.bottom;
                 addClass(infoPopup, 'below');
-                if (y + infoRect.height > vh)
+                if (y + infoRect.height > viewport.height)
                 {
-                    if (infoRect.height - itemRect.top < y + infoRect.height - vh)
+                    if (infoRect.height - itemRect.top < y + infoRect.height - viewport.height)
                     {
                         y = itemRect.top - infoRect.height;
                         removeClass(infoPopup, 'below');
@@ -282,13 +306,13 @@ function InfoPopup(options)
                 y = itemRect.top - infoRect.height;
                 if (y < 0)
                 {
-                    if (sy >= -y)
+                    if (scrollTop >= -y)
                     {
-                        document.body.scrollTop += y;
-                        sy = document.body.scrollTop;
+                        scrollEl.scrollTop += y;
+                        scrollTop = scrollEl.scrollTop;
                         y = 0;
                     }
-                    else if (vh - itemRect.bottom - infoRect.height > y)
+                    else if (viewport.height - itemRect.bottom - infoRect.height > y)
                     {
                         y = itemRect.bottom;
                         addClass(infoPopup, 'below');
@@ -296,8 +320,8 @@ function InfoPopup(options)
                 }
                 break;
         }
-        infoPopup.style.left = String(x + sx - bodyRect.left) + 'px';
-        infoPopup.style.top = String(y + sy - bodyRect.top) + 'px';
+        infoPopup.style.left = String(x /*+ scrollLeft*/ - bodyRect.left + marginLeft) + 'px';
+        infoPopup.style.top = String(y /*+ scrollTop*/ - bodyRect.top + marginTop) + 'px';
     };
     self.options = options || {};
     self.dispose = function() {
