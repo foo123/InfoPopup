@@ -1,7 +1,7 @@
 /**
 *  InfoPopup.js
 *  A simple js class to show info popups easily for various items and events (Desktop and Mobile)
-*  @VERSION: 1.0.2
+*  @VERSION: 1.0.3
 *
 *  https://github.com/foo123/InfoPopup
 *
@@ -19,7 +19,7 @@ else
 }('undefined' !== typeof self ? self : this, 'InfoPopup', function(undef) {
 "use strict";
 
-var VERSION = '1.0.2',
+var VERSION = '1.0.3',
     trim_re = /^\s+|\s+$/g,
     trim = String.prototype.trim
         ? function(s) {return s.trim();}
@@ -255,7 +255,7 @@ function InfoPopup(options)
                     {
                         scrollEl.scrollLeft += x;
                         scrollLeft = scrollEl.scrollLeft;
-                        x = 0;
+                        //x = 0;
                     }
                     else
                     {
@@ -280,7 +280,7 @@ function InfoPopup(options)
                     {
                         scrollEl.scrollTop += y;
                         scrollTop = scrollEl.scrollTop;
-                        y = 0;
+                        //y = 0;
                     }
                     else
                     {
@@ -310,7 +310,7 @@ function InfoPopup(options)
                     {
                         scrollEl.scrollTop += y;
                         scrollTop = scrollEl.scrollTop;
-                        y = 0;
+                        //y = 0;
                     }
                     else if (viewport.height - itemRect.bottom - infoRect.height > y)
                     {
