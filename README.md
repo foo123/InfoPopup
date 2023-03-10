@@ -2,7 +2,7 @@
 
 A simple JavaScript class to show info popups easily for various combinations of items and events (Desktop and Mobile)
 
-**version 1.0.3** (6 kB minified)
+**version 1.0.4** (6 kB minified)
 
 
 [Live Example](https://foo123.github.io/examples/infopopup/)

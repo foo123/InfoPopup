@@ -1,7 +1,7 @@
 /**
 *  InfoPopup.js
 *  A simple js class to show info popups easily for various items and events (Desktop and Mobile)
-*  @VERSION: 1.0.3
+*  @VERSION: 1.0.4
 *
 *  https://github.com/foo123/InfoPopup
 *
@@ -19,7 +19,7 @@ else
 }('undefined' !== typeof self ? self : this, 'InfoPopup', function(undef) {
 "use strict";
 
-var VERSION = '1.0.3',
+var VERSION = '1.0.4',
     trim_re = /^\s+|\s+$/g,
     trim = String.prototype.trim
         ? function(s) {return s.trim();}
@@ -27,6 +27,10 @@ var VERSION = '1.0.3',
     eventOptionsSupported = null
 ;
 
+function is_function(x)
+{
+    return 'function' === typeof x;
+}
 function hasEventOptions()
 {
     var passiveSupported = false, options = {};
@@ -76,11 +80,38 @@ function removeEvent(target, event, handler, options)
 }
 function computedStyle(el)
 {
-    return ('function' === typeof(window.getComputedStyle) ? window.getComputedStyle(el, null) : el.currentStyle) || {};
+    return (is_function(window.getComputedStyle) ? window.getComputedStyle(el, null) : el.currentStyle) || {};
 }
 function rect(el)
 {
     return el.getBoundingClientRect();
+}
+function transform(q, p, a/*11*/, b/*12*/, c/*21*/, d/*22*/, e/*41*/, f/*42*/)
+{
+    q = q || {x:0, y:0};
+    var x = p.x, y = p.y;
+    q.x = a*x + c*y + e;
+    q.y = b*x + d*y + f;
+    return q;
+}
+function coords(item, evt)
+{
+    if (item && evt)
+    {
+        var p = {
+            x: evt.touches && evt.touches.length ? evt.touches[0].clientX : evt.clientX,
+            y: evt.touches && evt.touches.length ? evt.touches[0].clientY : evt.clientY
+        };
+        var svg = closest(item, 'svg');
+        if (svg && is_function(svg.getScreenCTM))
+        {
+            var m = svg.getScreenCTM().inverse(),
+                q = transform(null, p, m.a, m.b, m.c, m.d, m.e, m.f)
+            ;
+            return {dom:p, svg:q};
+        }
+        return {dom:p};
+    }
 }
 function scrollingElement(document)
 {
@@ -95,7 +126,7 @@ function viewPort(document)
 }
 function closest(el, selector)
 {
-    if (el.closest) return el.closest(selector);
+    if (el && el.closest) return el.closest(selector);
     while (el)
     {
         if (el.matches(selector)) return el;
@@ -110,14 +141,10 @@ function ancestor(el, other)
         el = el.parentNode;
     }
 }
-function is_function(x)
-{
-    return 'function' === typeof x;
-}
 function InfoPopup(options)
 {
     var self = this, infoPopup, content,
-        closeBt, timer, current, positionAt,
+        closeBt, timer, current, currentData, positionAt,
         removePopup, removeInfoPopup, clearCurrent,
         clearTimer, handler, handler2, infoHandler;
 
@@ -132,8 +159,9 @@ function InfoPopup(options)
         {
             removeClass(current, self.options.focusedClass || 'focused');
             if ('function' === typeof self.options.onBlur)
-                self.options.onBlur(current);
+                self.options.onBlur(current, currentData);
             current = null;
+            currentData = null;
         }
     };
     removePopup = function(evt) {
@@ -173,14 +201,14 @@ function InfoPopup(options)
             }
         }
     };
-    positionAt = function(item, atItemX, atItemY) {
+    positionAt = function(item, itemData, atItemX, atItemY, _refresh) {
         var bodyStyle, bodyRect, itemRect, infoRect,
             scrollEl, viewport, x, y,
             scrollLeft = 0, scrollTop = 0,
             marginLeft = 0, marginTop = 0;
 
-        if (is_function(atItemX)) atItemX = atItemX(item, self);
-        if (is_function(atItemY)) atItemY = atItemY(item, self);
+        if (is_function(atItemX)) atItemX = atItemX(item, self, itemData);
+        if (is_function(atItemY)) atItemY = atItemY(item, self, itemData);
         infoPopup.style.position = 'absolute';
         removeClass(infoPopup, 'below');
         removeClass(infoPopup, 'left');
@@ -189,8 +217,8 @@ function InfoPopup(options)
         viewport = viewPort(document);
         bodyStyle = computedStyle(document.body);
         bodyRect = rect(document.body);
-        itemRect = rect(item);
         infoRect = rect(infoPopup);
+        itemRect = itemData.rect && !_refresh ? itemData.rect : rect(item);
         if ('static' === bodyStyle.position)
         {
             // take account of applied margins
@@ -330,7 +358,7 @@ function InfoPopup(options)
         if ('click' === self.options.trigger)
         {
             if (closeBt) removeEvent(closeBt, 'click', removePopup, {capture:true, passive:false});
-            removeEvent(document.body, 'click', handler, { capture:true, passive:false});
+            removeEvent(document.body, 'click', handler, {capture:true, passive:false});
         }
         else
         {
@@ -346,9 +374,10 @@ function InfoPopup(options)
     };
     self.show = function(item, evt) {
         if (!item || !is_function(self.options.content)) return;
-        var infoContent, imgs, loaded = 0;
+        var infoContent, imgs, loaded = 0, data;
 
-        infoContent = self.options.content(item, self);
+        data = {coords:coords(item, evt), rect:rect(item)};
+        infoContent = self.options.content(item, self, data);
         if (null == infoContent || false === infoContent)
         {
             return;
@@ -370,6 +399,7 @@ function InfoPopup(options)
         clearCurrent();
 
         current = item;
+        currentData = data;
         addClass(current, self.options.focusedClass || 'focused');
 
         document.body.appendChild(infoPopup);
@@ -392,7 +422,7 @@ function InfoPopup(options)
                         )
                        {
                            // re-position popup
-                           positionAt(item, self.options.atItemX, self.options.atItemY);
+                           positionAt(item, data, self.options.atItemX, self.options.atItemY, true);
                        }
                    };
                    addEvent(img, 'error', load);
@@ -404,7 +434,7 @@ function InfoPopup(options)
                }
             });
         }
-        positionAt(item, self.options.atItemX, self.options.atItemY);
+        positionAt(item, data, self.options.atItemX, self.options.atItemY, false);
     };
 
     if (!infoPopup)
