@@ -1,7 +1,7 @@
 /**
 *  InfoPopup.js
 *  A simple js class to show info popups easily for various items and events (Desktop and Mobile)
-*  @VERSION: 1.0.4
+*  @VERSION: 1.0.5
 *
 *  https://github.com/foo123/InfoPopup
 *
@@ -19,7 +19,7 @@ else
 }('undefined' !== typeof self ? self : this, 'InfoPopup', function(undef) {
 "use strict";
 
-var VERSION = '1.0.4',
+var VERSION = '1.0.5',
     trim_re = /^\s+|\s+$/g,
     trim = String.prototype.trim
         ? function(s) {return s.trim();}
@@ -48,6 +48,19 @@ function hasEventOptions()
     }
     return passiveSupported;
 }
+function addEvent(target, event, handler, options)
+{
+    if (null == eventOptionsSupported) eventOptionsSupported = hasEventOptions();
+    if (target.attachEvent) target.attachEvent('on' + event, handler);
+    else target.addEventListener(event, handler, eventOptionsSupported ? options : ('object' === typeof(options) ? !!options.capture : !!options));
+}
+function removeEvent(target, event, handler, options)
+{
+    if (null == eventOptionsSupported) eventOptionsSupported = hasEventOptions();
+    // if (el.removeEventListener) not working in IE11
+    if (target.detachEvent) target.detachEvent('on' + event, handler);
+    else target.removeEventListener(event, handler, eventOptionsSupported ? options : ('object' === typeof(options) ? !!options.capture : !!options));
+}
 function hasClass(el, className)
 {
     return el.classList
@@ -64,19 +77,6 @@ function removeClass(el, className)
 {
     if (el.classList) el.classList.remove(className);
     else el.className = trim((' ' + el.className + ' ').replace(' ' + className + ' ', ' '));
-}
-function addEvent(target, event, handler, options)
-{
-    if (null == eventOptionsSupported) eventOptionsSupported = hasEventOptions();
-    if (target.attachEvent) target.attachEvent('on' + event, handler);
-    else target.addEventListener(event, handler, eventOptionsSupported ? options : ('object' === typeof(options) ? !!options.capture : !!options));
-}
-function removeEvent(target, event, handler, options)
-{
-    if (null == eventOptionsSupported) eventOptionsSupported = hasEventOptions();
-    // if (el.removeEventListener) not working in IE11
-    if (target.detachEvent) target.detachEvent('on' + event, handler);
-    else target.removeEventListener(event, handler, eventOptionsSupported ? options : ('object' === typeof(options) ? !!options.capture : !!options));
 }
 function computedStyle(el)
 {
@@ -202,7 +202,7 @@ function InfoPopup(options)
         }
     };
     positionAt = function(item, itemData, atItemX, atItemY, _refresh) {
-        var bodyStyle, bodyRect, itemRect, infoRect,
+        var bodyStyle, bodyRect, bodyScroll, itemRect, infoRect,
             scrollEl, viewport, x, y,
             scrollLeft = 0, scrollTop = 0,
             marginLeft = 0, marginTop = 0;
@@ -217,6 +217,7 @@ function InfoPopup(options)
         viewport = viewPort(document);
         bodyStyle = computedStyle(document.body);
         bodyRect = rect(document.body);
+        //bodyScroll = {left: document.body.scrollLeft || 0, top: document.body.scrollTop || 0};
         infoRect = rect(infoPopup);
         itemRect = itemData.rect && !_refresh ? itemData.rect : rect(item);
         if ('static' === bodyStyle.position)
@@ -279,7 +280,7 @@ function InfoPopup(options)
                 x = itemRect.left + itemRect.width / 2 - infoRect.width / 2;
                 if (x < 0)
                 {
-                    if (scrollLeft >= -x)
+                    if ((scrollLeft >= -x) && (false !== self.options.scrollXIfNeeded))
                     {
                         scrollEl.scrollLeft += x;
                         scrollLeft = scrollEl.scrollLeft;
@@ -304,7 +305,7 @@ function InfoPopup(options)
                 y = itemRect.top + itemRect.height / 2 - infoRect.height;
                 if (y < 0)
                 {
-                    if (scrollTop >= -y)
+                    if ((scrollTop >= -y) && (false !== self.options.scrollYIfNeeded))
                     {
                         scrollEl.scrollTop += y;
                         scrollTop = scrollEl.scrollTop;
@@ -334,7 +335,7 @@ function InfoPopup(options)
                 y = itemRect.top - infoRect.height;
                 if (y < 0)
                 {
-                    if (scrollTop >= -y)
+                    if ((scrollTop >= -y) && (false !== self.options.scrollYIfNeeded))
                     {
                         scrollEl.scrollTop += y;
                         scrollTop = scrollEl.scrollTop;
@@ -348,8 +349,8 @@ function InfoPopup(options)
                 }
                 break;
         }
-        infoPopup.style.left = String(x /*+ scrollLeft*/ - bodyRect.left + marginLeft) + 'px';
-        infoPopup.style.top = String(y /*+ scrollTop*/ - bodyRect.top + marginTop) + 'px';
+        infoPopup.style.left = String(x - bodyRect.left /*+ bodyScroll.left*/ + marginLeft) + 'px';
+        infoPopup.style.top = String(y - bodyRect.top /*+ bodyScroll.top*/ + marginTop) + 'px';
     };
     self.options = options || {};
     self.dispose = function() {
@@ -414,15 +415,19 @@ function InfoPopup(options)
                        removeEvent(img, 'error', load);
                        removeEvent(img, 'load', load);
                        ++loaded;
-                       if (
-                        (imgs.length === loaded)
-                        && (item === current)
-                        && infoPopup.parentNode
-                        && (infoPopup === ancestor(img, infoPopup))
-                        )
+                       if (imgs.length === loaded)
                        {
-                           // re-position popup
-                           positionAt(item, data, self.options.atItemX, self.options.atItemY, true);
+                           if (
+                            (item === current)
+                            && infoPopup && infoPopup.parentNode
+                            && (infoPopup === ancestor(img, infoPopup))
+                            )
+                           {
+                               // re-position popup
+                               positionAt(item, data, self.options.atItemX, self.options.atItemY, true);
+                           }
+                           item = null;
+                           data = null;
                        }
                    };
                    addEvent(img, 'error', load);

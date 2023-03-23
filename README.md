@@ -2,7 +2,7 @@
 
 A simple JavaScript class to show info popups easily for various combinations of items and events (Desktop and Mobile)
 
-**version 1.0.4** (6 kB minified)
+**version 1.0.5** (6 kB minified)
 
 
 [Live Example](https://foo123.github.io/examples/infopopup/)
@@ -33,6 +33,10 @@ let infoPopup = InfoPopup({
     // position popup differently on Y axis depending on item
     // options: 'bottom', 'center', 'top' (default)
     atItemY: (item) => item.href === '#bar' ? 'bottom' : 'top',
+    // scroll window X axis for popup to show at specified position if needed
+    scrollXIfNeeded: true /* true|false, default true */,
+    // scroll window Y axis for popup to show at specified position if needed
+    scrollYIfNeeded: true /* true|false, default true */,
     // hide popup after 1 sec
     hideDelay: 1000
 });
